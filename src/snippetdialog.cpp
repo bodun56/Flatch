@@ -88,8 +88,8 @@ SnippetDialog::SnippetDialog(Database *database, const Snippet *existing, int de
     if (existing)
         m_original = *existing;
 
-    setWindowTitle(m_editing ? QStringLiteral("Редактирование сниппета")
-                             : QStringLiteral("Новый сниппет"));
+    setWindowTitle(m_editing ? tr("Редактирование сниппета")
+                             : tr("Новый сниппет"));
     setWindowIcon(flatchIcon());
     setModal(true);
     setSizeGripEnabled(true);
@@ -115,19 +115,19 @@ void SnippetDialog::buildUi()
     form->setLabelAlignment(Qt::AlignRight | Qt::AlignVCenter);
 
     m_name = new QLineEdit;
-    m_name->setPlaceholderText(QStringLiteral("Например: Boosty"));
+    m_name->setPlaceholderText(tr("Например: Boosty"));
     m_name->setMaxLength(120);
-    form->addRow(QStringLiteral("Название:"), m_name);
+    form->addRow(tr("Название:"), m_name);
 
     m_category = new QComboBox;
-    form->addRow(QStringLiteral("Категория:"), m_category);
+    form->addRow(tr("Категория:"), m_category);
 
     m_kind = new QComboBox;
-    m_kind->addItem(QStringLiteral("Простой текст"), static_cast<int>(SnippetKind::PlainText));
-    m_kind->addItem(QStringLiteral("Форматированный текст"), static_cast<int>(SnippetKind::RichText));
-    m_kind->addItem(QStringLiteral("Файлы"), static_cast<int>(SnippetKind::Files));
-    m_kind->addItem(QStringLiteral("Приложение"), static_cast<int>(SnippetKind::Application));
-    form->addRow(QStringLiteral("Тип:"), m_kind);
+    m_kind->addItem(tr("Простой текст"), static_cast<int>(SnippetKind::PlainText));
+    m_kind->addItem(tr("Форматированный текст"), static_cast<int>(SnippetKind::RichText));
+    m_kind->addItem(tr("Файлы"), static_cast<int>(SnippetKind::Files));
+    m_kind->addItem(tr("Приложение"), static_cast<int>(SnippetKind::Application));
+    form->addRow(tr("Тип:"), m_kind);
 
     mainLayout->addLayout(form);
 
@@ -135,7 +135,7 @@ void SnippetDialog::buildUi()
 
     // --- Plain text ---
     m_plain = new QPlainTextEdit;
-    m_plain->setPlaceholderText(QStringLiteral("Введите текст, который нужно копировать…"));
+    m_plain->setPlaceholderText(tr("Введите текст, который нужно копировать…"));
     m_plain->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
     m_stack->addWidget(m_plain);
 
@@ -159,19 +159,19 @@ void SnippetDialog::buildUi()
         return button;
     };
 
-    m_bold = makeFormatButton(QStringLiteral("Ж"), QStringLiteral("Полужирный (Ctrl+B)"), true);
+    m_bold = makeFormatButton(tr("Ж"), tr("Полужирный (Ctrl+B)"), true);
     QFont boldFont = m_bold->font();
     boldFont.setBold(true);
     m_bold->setFont(boldFont);
     toolbar->addWidget(m_bold);
 
-    m_italic = makeFormatButton(QStringLiteral("К"), QStringLiteral("Курсив (Ctrl+I)"), true);
+    m_italic = makeFormatButton(tr("К"), tr("Курсив (Ctrl+I)"), true);
     QFont italicFont = m_italic->font();
     italicFont.setItalic(true);
     m_italic->setFont(italicFont);
     toolbar->addWidget(m_italic);
 
-    m_underline = makeFormatButton(QStringLiteral("Ч"), QStringLiteral("Подчёркнутый (Ctrl+U)"), true);
+    m_underline = makeFormatButton(tr("Ч"), tr("Подчёркнутый (Ctrl+U)"), true);
     QFont underlineFont = m_underline->font();
     underlineFont.setUnderline(true);
     m_underline->setFont(underlineFont);
@@ -182,7 +182,7 @@ void SnippetDialog::buildUi()
     m_fontSize = new QComboBox;
     m_fontSize->setEditable(true);
     m_fontSize->setFixedWidth(64);
-    m_fontSize->setToolTip(QStringLiteral("Размер шрифта"));
+    m_fontSize->setToolTip(tr("Размер шрифта"));
     m_fontSize->setValidator(new QDoubleValidator(4.0, 200.0, 1, m_fontSize));
     const int sizes[] = {8, 9, 10, 11, 12, 14, 16, 18, 20, 24, 28, 32, 36, 48};
     for (int size : sizes)
@@ -191,22 +191,22 @@ void SnippetDialog::buildUi()
     toolbar->addWidget(m_fontSize);
 
     auto *colorButton = new QToolButton;
-    colorButton->setText(QStringLiteral("Цвет"));
-    colorButton->setToolTip(QStringLiteral("Цвет текста"));
+    colorButton->setText(tr("Цвет"));
+    colorButton->setToolTip(tr("Цвет текста"));
     colorButton->setAutoRaise(true);
     colorButton->setFixedHeight(28);
     toolbar->addWidget(colorButton);
 
     toolbar->addWidget(makeSeparator());
 
-    auto *bulletButton = makeFormatButton(QStringLiteral("•"), QStringLiteral("Маркированный список"), false);
+    auto *bulletButton = makeFormatButton(QStringLiteral("•"), tr("Маркированный список"), false);
     toolbar->addWidget(bulletButton);
-    auto *numberButton = makeFormatButton(QStringLiteral("1."), QStringLiteral("Нумерованный список"), false);
+    auto *numberButton = makeFormatButton(QStringLiteral("1."), tr("Нумерованный список"), false);
     toolbar->addWidget(numberButton);
 
     auto *clearButton = new QToolButton;
-    clearButton->setText(QStringLiteral("Сброс"));
-    clearButton->setToolTip(QStringLiteral("Убрать форматирование"));
+    clearButton->setText(tr("Сброс"));
+    clearButton->setToolTip(tr("Убрать форматирование"));
     clearButton->setAutoRaise(true);
     clearButton->setFixedHeight(28);
     toolbar->addWidget(clearButton);
@@ -216,7 +216,7 @@ void SnippetDialog::buildUi()
 
     m_rich = new QTextEdit;
     m_rich->setAcceptRichText(true);
-    m_rich->setPlaceholderText(QStringLiteral("Введите текст с оформлением…"));
+    m_rich->setPlaceholderText(tr("Введите текст с оформлением…"));
     richLayout->addWidget(m_rich, 1);
     m_stack->addWidget(richPage);
 
@@ -232,15 +232,15 @@ void SnippetDialog::buildUi()
     filesLayout->addWidget(m_files, 1);
 
     auto *filesButtons = new QHBoxLayout;
-    auto *addFilesButton = new QPushButton(QStringLiteral("Добавить файлы…"));
-    auto *removeFilesButton = new QPushButton(QStringLiteral("Удалить"));
+    auto *addFilesButton = new QPushButton(tr("Добавить файлы…"));
+    auto *removeFilesButton = new QPushButton(tr("Удалить"));
     filesButtons->addWidget(addFilesButton);
     filesButtons->addWidget(removeFilesButton);
     filesButtons->addStretch(1);
     filesLayout->addLayout(filesButtons);
     filesLayout->addWidget(makeHintLabel(
-        QStringLiteral("Файлы будут помещены в буфер обмена как файловые объекты. "
-                       "Вставляйте их в проводник, почту или другое приложение.")));
+        tr("Файлы будут помещены в буфер обмена как файловые объекты. "
+           "Вставляйте их в проводник, почту или другое приложение.")));
 
     m_stack->addWidget(filesPage);
 
@@ -251,15 +251,15 @@ void SnippetDialog::buildUi()
     appLayout->setSpacing(8);
 
     appLayout->addWidget(makeHintLabel(
-        QStringLiteral("Приложение будет запущено сразу после выбора сниппета. "
-                       "Flatch не ждёт его завершения и не управляет им.")));
+        tr("Приложение будет запущено сразу после выбора сниппета. "
+           "Flatch не ждёт его завершения и не управляет им.")));
 
     auto *appRow = new QHBoxLayout;
     m_appPath = new QLineEdit;
     m_appPath->setReadOnly(true);
-    m_appPath->setPlaceholderText(QStringLiteral("Путь к исполняемому файлу"));
-    auto *browseAppButton = new QPushButton(QStringLiteral("Выбрать…"));
-    auto *clearAppButton = new QPushButton(QStringLiteral("Очистить"));
+    m_appPath->setPlaceholderText(tr("Путь к исполняемому файлу"));
+    auto *browseAppButton = new QPushButton(tr("Выбрать…"));
+    auto *clearAppButton = new QPushButton(tr("Очистить"));
     appRow->addWidget(m_appPath, 1);
     appRow->addWidget(browseAppButton);
     appRow->addWidget(clearAppButton);
@@ -268,25 +268,25 @@ void SnippetDialog::buildUi()
 
     m_stack->addWidget(appPage);
 
-    mainLayout->addWidget(makeSectionLabel(QStringLiteral("Содержимое")));
+    mainLayout->addWidget(makeSectionLabel(tr("Содержимое")));
     mainLayout->addWidget(m_stack, 1);
 
     m_encrypt = new QCheckBox(
-        QStringLiteral("Хранить содержимое в зашифрованном виде (логины и пароли)"));
+        tr("Хранить содержимое в зашифрованном виде (логины и пароли)"));
     m_encrypt->setToolTip(
-        QStringLiteral("Сниппет хранится в базе в зашифрованном виде, "
-                       "а в буфер обмена попадает расшифрованным."));
+        tr("Сниппет хранится в базе в зашифрованном виде, "
+           "а в буфер обмена попадает расшифрованным."));
     mainLayout->addWidget(m_encrypt);
 
     mainLayout->addWidget(makeHintLabel(
-        QStringLiteral("Ключ шифрования хранится в профиле пользователя и защищён средствами "
-                       "операционной системы. Отдельный пароль для Flatch не нужен.")));
+        tr("Ключ шифрования хранится в профиле пользователя и защищён средствами "
+           "операционной системы. Отдельный пароль для Flatch не нужен.")));
 
     auto *buttons = new QDialogButtonBox(QDialogButtonBox::Save | QDialogButtonBox::Cancel);
     if (QPushButton *saveButton = buttons->button(QDialogButtonBox::Save))
-        saveButton->setText(QStringLiteral("Сохранить"));
+        saveButton->setText(tr("Сохранить"));
     if (QPushButton *cancelButton = buttons->button(QDialogButtonBox::Cancel))
-        cancelButton->setText(QStringLiteral("Отмена"));
+        cancelButton->setText(tr("Отмена"));
     mainLayout->addWidget(buttons);
 
     connect(buttons, &QDialogButtonBox::accepted, this, &SnippetDialog::accept);
@@ -361,7 +361,7 @@ void SnippetDialog::buildUi()
         if (!Crypto::isAvailable(&error)) {
             QSignalBlocker blocker(m_encrypt);
             m_encrypt->setChecked(false);
-            QMessageBox::warning(this, QStringLiteral("Шифрование недоступно"), error);
+            QMessageBox::warning(this, tr("Шифрование недоступно"), error);
         }
     });
 }
@@ -445,8 +445,8 @@ bool SnippetDialog::loadStoredContent(QString *content)
     QString error;
     if (!Crypto::decrypt(m_original.content, content, &error)) {
         showWarning(error
-                    + QStringLiteral("\n\nСодержимое не загружено. Если сохранить сниппет, "
-                                     "его нужно будет заполнить заново."));
+                    + tr("\n\nСодержимое не загружено. Если сохранить сниппет, "
+                         "его нужно будет заполнить заново."));
         content->clear();
         return false;
     }
@@ -483,7 +483,7 @@ SnippetKind SnippetDialog::currentKind() const
 void SnippetDialog::chooseFiles()
 {
     const QStringList files = QFileDialog::getOpenFileNames(
-        this, QStringLiteral("Добавить файлы"), documentsDirectory());
+        this, tr("Добавить файлы"), documentsDirectory());
     for (const QString &path : files)
         addFilePath(path);
 }
@@ -526,14 +526,14 @@ void SnippetDialog::chooseApplication()
 #endif
 
 #ifdef Q_OS_WIN
-    const QString filter = QStringLiteral(
+    const QString filter = tr(
         "Программы (*.exe *.bat *.cmd *.com *.lnk);;Все файлы (*.*)");
 #else
-    const QString filter = QStringLiteral("Все файлы (*)");
+    const QString filter = tr("Все файлы (*)");
 #endif
 
     const QString path = QFileDialog::getOpenFileName(
-        this, QStringLiteral("Выбрать приложение"), startDirectory, filter);
+        this, tr("Выбрать приложение"), startDirectory, filter);
     if (!path.isEmpty())
         m_appPath->setText(QDir::cleanPath(path));
 }
@@ -599,7 +599,7 @@ void SnippetDialog::chooseTextColor()
     if (format.hasProperty(QTextFormat::ForegroundBrush))
         current = format.foreground().color();
 
-    const QColor color = QColorDialog::getColor(current, this, QStringLiteral("Цвет текста"));
+    const QColor color = QColorDialog::getColor(current, this, tr("Цвет текста"));
     if (!color.isValid())
         return;
 
@@ -655,13 +655,13 @@ void SnippetDialog::accept()
 {
     const QString name = m_name->text().trimmed();
     if (name.isEmpty()) {
-        showWarning(QStringLiteral("Введите название сниппета."));
+        showWarning(tr("Введите название сниппета."));
         m_name->setFocus();
         return;
     }
 
     if (m_category->currentIndex() < 0) {
-        showWarning(QStringLiteral("Сначала создайте хотя бы одну категорию."));
+        showWarning(tr("Сначала создайте хотя бы одну категорию."));
         return;
     }
 
@@ -672,13 +672,13 @@ void SnippetDialog::accept()
     if (kind == SnippetKind::PlainText) {
         content = m_plain->toPlainText();
         if (content.trimmed().isEmpty()) {
-            showWarning(QStringLiteral("Введите текст сниппета."));
+            showWarning(tr("Введите текст сниппета."));
             m_plain->setFocus();
             return;
         }
     } else if (kind == SnippetKind::RichText) {
         if (m_rich->toPlainText().trimmed().isEmpty()) {
-            showWarning(QStringLiteral("Введите текст сниппета."));
+            showWarning(tr("Введите текст сниппета."));
             m_rich->setFocus();
             return;
         }
@@ -686,16 +686,16 @@ void SnippetDialog::accept()
     } else {
         if (paths.isEmpty()) {
             if (kind == SnippetKind::Files)
-                showWarning(QStringLiteral("Добавьте хотя бы один файл."));
+                showWarning(tr("Добавьте хотя бы один файл."));
             else
-                showWarning(QStringLiteral("Выберите приложение."));
+                showWarning(tr("Выберите приложение."));
             return;
         }
 
         if (kind == SnippetKind::Application && !QFileInfo::exists(paths.first())) {
             const auto answer = QMessageBox::question(
-                this, QStringLiteral("Приложение не найдено"),
-                QStringLiteral("Файл «%1» не найден. Сохранить сниппет всё равно?")
+                this, tr("Приложение не найдено"),
+                tr("Файл «%1» не найден. Сохранить сниппет всё равно?")
                     .arg(QDir::toNativeSeparators(paths.first())),
                 QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
             if (answer != QMessageBox::Yes)
@@ -710,7 +710,7 @@ void SnippetDialog::accept()
         QString encrypted;
         QString error;
         if (!Crypto::encrypt(content, &encrypted, &error)) {
-            showWarning(QStringLiteral("Не удалось зашифровать содержимое.\n\n") + error);
+            showWarning(tr("Не удалось зашифровать содержимое.\n\n") + error);
             return;
         }
         content = encrypted;
@@ -728,13 +728,13 @@ void SnippetDialog::accept()
     if (m_editing) {
         snippet.id = m_original.id;
         if (!m_database->updateSnippet(snippet, &error)) {
-            showWarning(QStringLiteral("Не удалось сохранить сниппет.\n\n") + error);
+            showWarning(tr("Не удалось сохранить сниппет.\n\n") + error);
             return;
         }
         snippetId = m_original.id;
     } else {
         if (!m_database->addSnippet(snippet, &snippetId, &error)) {
-            showWarning(QStringLiteral("Не удалось сохранить сниппет.\n\n") + error);
+            showWarning(tr("Не удалось сохранить сниппет.\n\n") + error);
             return;
         }
     }

@@ -2,6 +2,7 @@
 
 #include "apppaths.h"
 
+#include <QCoreApplication>
 #include <QCryptographicHash>
 #include <QFile>
 #include <QFileInfo>
@@ -87,7 +88,9 @@ bool protectWithDpapi(const QByteArray &input, QByteArray *output, QString *erro
     DATA_BLOB outBlob{};
     if (!CryptProtectData(&inBlob, L"Flatch encryption key", &entropyBlob,
                           nullptr, nullptr, CRYPTPROTECT_UI_FORBIDDEN, &outBlob)) {
-        setError(error, QStringLiteral("Windows DPAPI не смогла защитить ключ шифрования (код ошибки %1).")
+        setError(error, QCoreApplication::translate(
+                            "Crypto",
+                            "Windows DPAPI не смогла защитить ключ шифрования (код ошибки %1).")
                             .arg(GetLastError()));
         return false;
     }
@@ -111,8 +114,10 @@ bool unprotectWithDpapi(const QByteArray &input, QByteArray *output, QString *er
     DATA_BLOB outBlob{};
     if (!CryptUnprotectData(&inBlob, nullptr, &entropyBlob,
                             nullptr, nullptr, CRYPTPROTECT_UI_FORBIDDEN, &outBlob)) {
-        setError(error, QStringLiteral("Не удалось расшифровать файл ключа (%1). "
-                                       "Он был создан для другой учётной записи Windows?")
+        setError(error, QCoreApplication::translate(
+                            "Crypto",
+                            "Не удалось расшифровать файл ключа (%1). "
+                            "Он был создан для другой учётной записи Windows?")
                             .arg(GetLastError()));
         return false;
     }
@@ -137,18 +142,21 @@ bool writeKeyFile(const QByteArray &rawKey, QString *error)
     const QString path = AppPaths::keyFile();
     QSaveFile file(path);
     if (!file.open(QIODevice::WriteOnly)) {
-        setError(error, QStringLiteral("Не удалось создать файл ключа «%1»: %2")
+        setError(error, QCoreApplication::translate(
+                            "Crypto", "Не удалось создать файл ключа «%1»: %2")
                             .arg(path, file.errorString()));
         return false;
     }
     if (file.write(stored) != stored.size()) {
-        setError(error, QStringLiteral("Не удалось записать файл ключа «%1»: %2")
+        setError(error, QCoreApplication::translate(
+                            "Crypto", "Не удалось записать файл ключа «%1»: %2")
                             .arg(path, file.errorString()));
         file.cancelWriting();
         return false;
     }
     if (!file.commit()) {
-        setError(error, QStringLiteral("Не удалось сохранить файл ключа «%1»: %2")
+        setError(error, QCoreApplication::translate(
+                            "Crypto", "Не удалось сохранить файл ключа «%1»: %2")
                             .arg(path, file.errorString()));
         return false;
     }
@@ -162,7 +170,8 @@ bool readKeyFile(QString *error)
     const QString path = AppPaths::keyFile();
     QFile file(path);
     if (!file.open(QIODevice::ReadOnly)) {
-        setError(error, QStringLiteral("Не удалось открыть файл ключа «%1»: %2")
+        setError(error, QCoreApplication::translate(
+                            "Crypto", "Не удалось открыть файл ключа «%1»: %2")
                             .arg(path, file.errorString()));
         return false;
     }
@@ -170,8 +179,10 @@ bool readKeyFile(QString *error)
     QByteArray stored = file.readAll();
     file.close();
     if (stored.isEmpty()) {
-        setError(error, QStringLiteral("Файл ключа «%1» пуст. Удалите его, чтобы создать новый; "
-                                       "старые защищённые сниппеты после этого станут недоступны.")
+        setError(error, QCoreApplication::translate(
+                            "Crypto",
+                            "Файл ключа «%1» пуст. Удалите его, чтобы создать новый; "
+                            "старые защищённые сниппеты после этого станут недоступны.")
                             .arg(path));
         return false;
     }
@@ -184,7 +195,8 @@ bool readKeyFile(QString *error)
 #endif
 
     if (raw.size() != kMasterKeySize) {
-        setError(error, QStringLiteral("Файл ключа «%1» повреждён (неверный размер).").arg(path));
+        setError(error, QCoreApplication::translate(
+                            "Crypto", "Файл ключа «%1» повреждён (неверный размер).").arg(path));
         return false;
     }
 
@@ -285,7 +297,8 @@ bool decrypt(const QString &envelope, QString *out, QString *error)
 
     const QString trimmed = envelope.trimmed();
     if (!trimmed.startsWith(QString::fromLatin1(kEnvelopePrefix))) {
-        setError(error, QStringLiteral("Неизвестный формат зашифрованных данных."));
+        setError(error, QCoreApplication::translate(
+                            "Crypto", "Неизвестный формат зашифрованных данных."));
         return false;
     }
 
@@ -293,13 +306,15 @@ bool decrypt(const QString &envelope, QString *out, QString *error)
         trimmed.mid(kEnvelopePrefix.size()).toLatin1());
     const int minimumSize = 1 + kNonceSize + kTagSize;
     if (raw.size() < minimumSize) {
-        setError(error, QStringLiteral("Зашифрованные данные повреждены (слишком короткие)."));
+        setError(error, QCoreApplication::translate(
+                            "Crypto", "Зашифрованные данные повреждены (слишком короткие)."));
         return false;
     }
 
     const quint8 version = static_cast<quint8>(raw.at(0));
     if (version != kEnvelopeVersion) {
-        setError(error, QStringLiteral("Неподдерживаемая версия шифрования (%1).").arg(version));
+        setError(error, QCoreApplication::translate(
+                            "Crypto", "Неподдерживаемая версия шифрования (%1).").arg(version));
         return false;
     }
 
@@ -316,8 +331,10 @@ bool decrypt(const QString &envelope, QString *out, QString *error)
     macInput.append(cipher);
     const QByteArray expectedTag = hmacSha256(macKey, macInput);
     if (!constantTimeEquals(tag, expectedTag)) {
-        setError(error, QStringLiteral("Не удалось расшифровать сниппет: данные повреждены "
-                                       "или файл ключа был заменён."));
+        setError(error, QCoreApplication::translate(
+                            "Crypto",
+                            "Не удалось расшифровать сниппет: данные повреждены "
+                            "или файл ключа был заменён."));
         return false;
     }
 

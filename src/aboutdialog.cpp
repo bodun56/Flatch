@@ -61,7 +61,7 @@ QLabel *makeHintLabel(const QString &text)
 AboutDialog::AboutDialog(QWidget *parent)
     : QDialog(parent)
 {
-    setWindowTitle(QStringLiteral("О Flatch"));
+    setWindowTitle(tr("О Flatch"));
     setWindowIcon(flatchIcon());
     setModal(true);
     fitDialogToScreen(this, QSize(680, 560), QSize(560, 460));
@@ -89,13 +89,13 @@ AboutDialog::AboutDialog(QWidget *parent)
     title->setFont(titleFont);
     titleLayout->addWidget(title);
 
-    auto *version = new QLabel(QStringLiteral("Версия %1")
+    auto *version = new QLabel(tr("Версия %1")
                                    .arg(QCoreApplication::applicationVersion()));
     titleLayout->addWidget(version);
 
     auto *description = new QLabel(
-        QStringLiteral("Менеджер сниппетов в системном трее: обычный и форматированный "
-                       "текст, файлы и приложения."));
+        tr("Менеджер сниппетов в системном трее: обычный и форматированный "
+           "текст, файлы и приложения."));
     description->setWordWrap(true);
     titleLayout->addWidget(description);
 
@@ -103,7 +103,7 @@ AboutDialog::AboutDialog(QWidget *parent)
     mainLayout->addLayout(header);
 
     // --- Information ---
-    auto *infoGroup = new QGroupBox(QStringLiteral("Информация"));
+    auto *infoGroup = new QGroupBox(tr("Информация"));
     auto *infoForm = new QFormLayout(infoGroup);
     infoForm->setFieldGrowthPolicy(QFormLayout::AllNonFixedFieldsGrow);
     infoForm->setLabelAlignment(Qt::AlignRight | Qt::AlignVCenter);
@@ -112,24 +112,24 @@ AboutDialog::AboutDialog(QWidget *parent)
     QFont authorFont = author->font();
     authorFont.setBold(true);
     author->setFont(authorFont);
-    infoForm->addRow(QStringLiteral("Автор:"), author);
+    infoForm->addRow(tr("Автор:"), author);
 
-    infoForm->addRow(QStringLiteral("Версия Qt:"),
-                     new QLabel(QStringLiteral("%1 (сборка %2)")
+    infoForm->addRow(tr("Версия Qt:"),
+                     new QLabel(tr("%1 (сборка %2)")
                                     .arg(QString::fromLatin1(qVersion()),
                                          QStringLiteral(QT_VERSION_STR))));
-    infoForm->addRow(QStringLiteral("База данных:"), makePathLabel(AppPaths::databaseFile()));
-    infoForm->addRow(QStringLiteral("Ключ шифрования:"), makePathLabel(AppPaths::keyFile()));
+    infoForm->addRow(tr("База данных:"), makePathLabel(AppPaths::databaseFile()));
+    infoForm->addRow(tr("Ключ шифрования:"), makePathLabel(AppPaths::keyFile()));
 
     mainLayout->addWidget(infoGroup);
 
     // --- Links ---
-    auto *linksGroup = new QGroupBox(QStringLiteral("Ссылки"));
+    auto *linksGroup = new QGroupBox(tr("Ссылки"));
     auto *linksLayout = new QHBoxLayout(linksGroup);
     linksLayout->setSpacing(8);
     linksLayout->addWidget(makeUrlButton(QStringLiteral("GitHub"),
                                          QString::fromLatin1(kGithubUrl), linksGroup));
-    linksLayout->addWidget(makeUrlButton(QStringLiteral("Дзен"),
+    linksLayout->addWidget(makeUrlButton(tr("Дзен"),
                                          QString::fromLatin1(kDzenUrl), linksGroup));
     linksLayout->addWidget(makeUrlButton(QStringLiteral("Boosty"),
                                          QString::fromLatin1(kBoostyUrl), linksGroup));
@@ -137,30 +137,30 @@ AboutDialog::AboutDialog(QWidget *parent)
     mainLayout->addWidget(linksGroup);
 
     // --- Donations ---
-    auto *donateGroup = new QGroupBox(QStringLiteral("Поддержать проект"));
+    auto *donateGroup = new QGroupBox(tr("Поддержать проект"));
     auto *donateLayout = new QVBoxLayout(donateGroup);
     donateLayout->setSpacing(8);
 
     auto *donateButtons = new QHBoxLayout;
     donateButtons->setSpacing(8);
-    donateButtons->addWidget(makeUrlButton(QStringLiteral("Поддержать на Дзене"),
+    donateButtons->addWidget(makeUrlButton(tr("Поддержать на Дзене"),
                                            QString::fromLatin1(kDzenDonateUrl), donateGroup));
-    donateButtons->addWidget(makeUrlButton(QStringLiteral("Поддержать на Boosty"),
+    donateButtons->addWidget(makeUrlButton(tr("Поддержать на Boosty"),
                                            QString::fromLatin1(kBoostyDonateUrl), donateGroup));
     donateButtons->addStretch(1);
     donateLayout->addLayout(donateButtons);
     donateLayout->addWidget(makeHintLabel(
-        QStringLiteral("Спасибо за поддержку проекта и развитие бесплатных инструментов.")));
+        tr("Спасибо за поддержку проекта и развитие бесплатных инструментов.")));
 
     mainLayout->addWidget(donateGroup);
     mainLayout->addStretch(1);
 
     // --- Buttons ---
     auto *buttons = new QDialogButtonBox(QDialogButtonBox::Close);
-    QPushButton *openFolder = buttons->addButton(QStringLiteral("Открыть папку данных"),
+    QPushButton *openFolder = buttons->addButton(tr("Открыть папку данных"),
                                                  QDialogButtonBox::ActionRole);
     if (QPushButton *closeButton = buttons->button(QDialogButtonBox::Close))
-        closeButton->setText(QStringLiteral("Закрыть"));
+        closeButton->setText(tr("Закрыть"));
 
     connect(openFolder, &QPushButton::clicked, this, [] {
         QDesktopServices::openUrl(QUrl::fromLocalFile(AppPaths::dataDir()));

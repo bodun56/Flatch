@@ -33,8 +33,8 @@ void AppController::start(bool autostartLaunch)
         QApplication::setQuitOnLastWindowClosed(true);
         QMessageBox::warning(
             nullptr, QStringLiteral("Flatch"),
-            QStringLiteral("Системный трей недоступен. Flatch откроет окно настроек.\n\n"
-                           "Проверьте, что панель задач и область уведомлений работают."));
+            tr("Системный трей недоступен. Flatch откроет окно настроек.\n\n"
+               "Проверьте, что панель задач и область уведомлений работают."));
         showSettings();
         return;
     }
@@ -48,6 +48,10 @@ void AppController::showSettings()
     if (!m_settings) {
         m_settings = new SettingsDialog(m_database);
         m_settings->setAttribute(Qt::WA_DeleteOnClose, true);
+        connect(m_settings, &SettingsDialog::languageChanged, this, [this] {
+            if (m_tray)
+                m_tray->retranslate();
+        });
     }
 
     m_settings->show();

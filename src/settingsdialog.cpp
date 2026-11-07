@@ -3,12 +3,14 @@
 #include "appicon.h"
 #include "autostart.h"
 #include "database.h"
+#include "localization.h"
 #include "preferences.h"
 #include "snippetdialog.h"
 #include "uiutils.h"
 
 #include <QAbstractItemView>
 #include <QCheckBox>
+#include <QComboBox>
 #include <QDialogButtonBox>
 #include <QFont>
 #include <QGroupBox>
@@ -23,6 +25,7 @@
 #include <QPushButton>
 #include <QSignalBlocker>
 #include <QSplitter>
+#include <QTimer>
 #include <QTreeWidget>
 #include <QVBoxLayout>
 
@@ -53,7 +56,7 @@ SettingsDialog::SettingsDialog(Database *database, QWidget *parent)
     : QDialog(parent)
     , m_database(database)
 {
-    setWindowTitle(QStringLiteral("Flatch — настройки"));
+    setWindowTitle(tr("Flatch — настройки"));
     setWindowIcon(flatchIcon());
     setAttribute(Qt::WA_DeleteOnClose, true);
     setSizeGripEnabled(true);
@@ -77,18 +80,18 @@ void SettingsDialog::buildUi()
     leftLayout->setContentsMargins(0, 0, 0, 0);
     leftLayout->setSpacing(6);
 
-    leftLayout->addWidget(makeSectionLabel(QStringLiteral("Категории")));
+    leftLayout->addWidget(makeSectionLabel(tr("Категории")));
 
     m_categories = new QListWidget;
     m_categories->setAlternatingRowColors(true);
-    m_categories->setToolTip(QStringLiteral("Двойной щелчок — переименовать категорию"));
+    m_categories->setToolTip(tr("Двойной щелчок — переименовать категорию"));
     leftLayout->addWidget(m_categories, 1);
 
     auto *categoryButtons = new QHBoxLayout;
-    m_addCategory = new QPushButton(QStringLiteral("Добавить"));
-    m_renameCategory = new QPushButton(QStringLiteral("Изменить"));
-    m_renameCategory->setToolTip(QStringLiteral("Переименовать категорию"));
-    m_deleteCategory = new QPushButton(QStringLiteral("Удалить"));
+    m_addCategory = new QPushButton(tr("Добавить"));
+    m_renameCategory = new QPushButton(tr("Изменить"));
+    m_renameCategory->setToolTip(tr("Переименовать категорию"));
+    m_deleteCategory = new QPushButton(tr("Удалить"));
     categoryButtons->addWidget(m_addCategory);
     categoryButtons->addWidget(m_renameCategory);
     categoryButtons->addWidget(m_deleteCategory);
@@ -100,26 +103,25 @@ void SettingsDialog::buildUi()
     rightLayout->setContentsMargins(0, 0, 0, 0);
     rightLayout->setSpacing(6);
 
-    rightLayout->addWidget(makeSectionLabel(QStringLiteral("Сниппеты")));
+    rightLayout->addWidget(makeSectionLabel(tr("Сниппеты")));
 
     m_snippets = new QTreeWidget;
     m_snippets->setColumnCount(3);
-    m_snippets->setHeaderLabels({QStringLiteral("Название"), QStringLiteral("Тип"),
-                                 QStringLiteral("Защита")});
+    m_snippets->setHeaderLabels({tr("Название"), tr("Тип"), tr("Защита")});
     m_snippets->setRootIsDecorated(false);
     m_snippets->setUniformRowHeights(true);
     m_snippets->setAlternatingRowColors(true);
     m_snippets->setSelectionMode(QAbstractItemView::SingleSelection);
-    m_snippets->setToolTip(QStringLiteral("Двойной щелчок — редактировать сниппет"));
+    m_snippets->setToolTip(tr("Двойной щелчок — редактировать сниппет"));
     m_snippets->header()->setSectionResizeMode(0, QHeaderView::Stretch);
     m_snippets->header()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
     m_snippets->header()->setSectionResizeMode(2, QHeaderView::ResizeToContents);
     rightLayout->addWidget(m_snippets, 1);
 
     auto *snippetButtons = new QHBoxLayout;
-    m_addSnippet = new QPushButton(QStringLiteral("Добавить"));
-    m_editSnippet = new QPushButton(QStringLiteral("Изменить"));
-    m_deleteSnippet = new QPushButton(QStringLiteral("Удалить"));
+    m_addSnippet = new QPushButton(tr("Добавить"));
+    m_editSnippet = new QPushButton(tr("Изменить"));
+    m_deleteSnippet = new QPushButton(tr("Удалить"));
     snippetButtons->addWidget(m_addSnippet);
     snippetButtons->addWidget(m_editSnippet);
     snippetButtons->addWidget(m_deleteSnippet);
@@ -127,8 +129,8 @@ void SettingsDialog::buildUi()
     rightLayout->addLayout(snippetButtons);
 
     rightLayout->addWidget(makeHintLabel(
-        QStringLiteral("Двойной щелчок открывает редактор. Сниппеты доступны в меню "
-                       "по щелчку на иконке Flatch в системном трее.")));
+        tr("Двойной щелчок открывает редактор. Сниппеты доступны в меню "
+           "по щелчку на иконке Flatch в системном трее.")));
 
     splitter->addWidget(leftPanel);
     splitter->addWidget(rightPanel);
@@ -140,21 +142,39 @@ void SettingsDialog::buildUi()
     mainLayout->addWidget(splitter, 1);
 
     // --- System / startup ---
-    auto *systemGroup = new QGroupBox(QStringLiteral("Система"));
+    auto *systemGroup = new QGroupBox(tr("Система"));
     auto *systemLayout = new QVBoxLayout(systemGroup);
 
-    m_autostart = new QCheckBox(QStringLiteral("Запускать Flatch при входе в систему"));
+    auto *languageRow = new QHBoxLayout;
+    languageRow->addWidget(new QLabel(tr("Язык интерфейса:")));
+    m_language = new QComboBox;
+    m_language->addItem(Localization::languageName(QStringLiteral("system")),
+                        QStringLiteral("system"));
+    m_language->addItem(Localization::languageName(QStringLiteral("ru")), QStringLiteral("ru"));
+    m_language->addItem(Localization::languageName(QStringLiteral("en")), QStringLiteral("en"));
+    const int languageIndex = m_language->findData(Prefs::uiLanguage());
+    if (languageIndex >= 0) {
+        QSignalBlocker blocker(m_language);
+        m_language->setCurrentIndex(languageIndex);
+    }
+    languageRow->addWidget(m_language, 1);
+    languageRow->addStretch(1);
+    systemLayout->addLayout(languageRow);
+    systemLayout->addWidget(makeHintLabel(
+        tr("Язык интерфейса применяется сразу. По умолчанию используется язык системы.")));
+
+    m_autostart = new QCheckBox(tr("Запускать Flatch при входе в систему"));
     m_notifications = new QCheckBox(
-        QStringLiteral("Показывать уведомление после копирования в буфер обмена"));
+        tr("Показывать уведомление после копирования в буфер обмена"));
 
     if (Autostart::isSupported()) {
         QSignalBlocker blocker(m_autostart);
         m_autostart->setChecked(Autostart::isEnabled());
         m_autostart->setToolTip(
-            QStringLiteral("В автозагрузку записывается текущий путь к исполняемому файлу Flatch."));
+            tr("В автозагрузку записывается текущий путь к исполняемому файлу Flatch."));
     } else {
         m_autostart->setEnabled(false);
-        m_autostart->setText(QStringLiteral("Автозагрузка (доступна в Windows и Linux)"));
+        m_autostart->setText(tr("Автозагрузка (доступна в Windows и Linux)"));
     }
 
     QSignalBlocker notificationsBlocker(m_notifications);
@@ -166,7 +186,7 @@ void SettingsDialog::buildUi()
 
     auto *buttons = new QDialogButtonBox(QDialogButtonBox::Close);
     if (QPushButton *closeButton = buttons->button(QDialogButtonBox::Close))
-        closeButton->setText(QStringLiteral("Закрыть"));
+        closeButton->setText(tr("Закрыть"));
     mainLayout->addWidget(buttons);
 
     connect(m_categories, &QListWidget::currentRowChanged, this, [this](int) {
@@ -202,10 +222,55 @@ void SettingsDialog::buildUi()
     connect(m_notifications, &QCheckBox::toggled, this, [](bool checked) {
         Prefs::setNotificationsEnabled(checked);
     });
+    connect(m_language, &QComboBox::currentIndexChanged, this, [this](int index) {
+        const QString language = m_language->itemData(index).toString();
+        if (language == Prefs::uiLanguage())
+            return;
+
+        Prefs::setUiLanguage(language);
+        Localization::installTranslators();
+        emit languageChanged();
+
+        // The combo box is the sender of this signal, so the interface can only
+        // be rebuilt after the signal has been delivered.
+        QTimer::singleShot(0, this, &SettingsDialog::rebuildUi);
+    });
     connect(buttons, &QDialogButtonBox::rejected, this, &QDialog::reject);
 
     updateCategoryButtons();
     updateSnippetButtons();
+}
+
+void SettingsDialog::rebuildUi()
+{
+    const int categoryId = selectedCategoryId();
+    const int snippetId = selectedSnippetId();
+
+    // Recreate the whole dialog so every label, tooltip and button picks up the
+    // newly installed translator.
+    const QList<QWidget *> children =
+        findChildren<QWidget *>(QString(), Qt::FindDirectChildrenOnly);
+    for (QWidget *child : children)
+        delete child;
+    delete layout();
+
+    m_categories = nullptr;
+    m_snippets = nullptr;
+    m_addCategory = nullptr;
+    m_renameCategory = nullptr;
+    m_deleteCategory = nullptr;
+    m_addSnippet = nullptr;
+    m_editSnippet = nullptr;
+    m_deleteSnippet = nullptr;
+    m_autostart = nullptr;
+    m_notifications = nullptr;
+    m_language = nullptr;
+
+    setWindowTitle(tr("Flatch — настройки"));
+    fitDialogToScreen(this, QSize(900, 640), QSize(760, 480));
+    buildUi();
+    reloadCategories(categoryId);
+    selectSnippetById(snippetId);
 }
 
 void SettingsDialog::reloadCategories(int selectCategoryId)
@@ -325,12 +390,12 @@ void SettingsDialog::addCategory()
 {
     bool ok = false;
     const QString name = QInputDialog::getText(
-        this, QStringLiteral("Новая категория"), QStringLiteral("Название категории:"),
+        this, tr("Новая категория"), tr("Название категории:"),
         QLineEdit::Normal, QString(), &ok).trimmed();
     if (!ok)
         return;
     if (name.isEmpty()) {
-        showError(QStringLiteral("Название категории не может быть пустым."));
+        showError(tr("Название категории не может быть пустым."));
         return;
     }
 
@@ -352,7 +417,7 @@ void SettingsDialog::renameCategory()
     const int id = item->data(Qt::UserRole).toInt();
     bool ok = false;
     const QString name = QInputDialog::getText(
-        this, QStringLiteral("Переименовать категорию"), QStringLiteral("Новое название:"),
+        this, tr("Переименовать категорию"), tr("Новое название:"),
         QLineEdit::Normal, item->text(), &ok).trimmed();
     if (!ok || name.isEmpty() || name == item->text())
         return;
@@ -375,13 +440,13 @@ void SettingsDialog::deleteCategory()
     const QString name = item->text();
     const int snippetCount = m_database->snippets(id).size();
 
-    QString text = QStringLiteral("Удалить категорию «%1»?").arg(name);
+    QString text = tr("Удалить категорию «%1»?").arg(name);
     if (snippetCount > 0) {
-        text += QStringLiteral("\n\nВместе с ней будет удалено сниппетов: %1.")
+        text += tr("\n\nВместе с ней будет удалено сниппетов: %1.")
                     .arg(snippetCount);
     }
 
-    const auto answer = QMessageBox::question(this, QStringLiteral("Удаление категории"), text,
+    const auto answer = QMessageBox::question(this, tr("Удаление категории"), text,
                                              QMessageBox::Yes | QMessageBox::No,
                                              QMessageBox::No);
     if (answer != QMessageBox::Yes)
@@ -399,7 +464,7 @@ void SettingsDialog::addSnippet()
 {
     const int categoryId = selectedCategoryId();
     if (categoryId <= 0) {
-        showError(QStringLiteral("Сначала создайте категорию."));
+        showError(tr("Сначала создайте категорию."));
         return;
     }
 
@@ -440,8 +505,8 @@ void SettingsDialog::deleteSnippet()
 
     const QString name = m_snippets->currentItem()->text(0);
     const auto answer = QMessageBox::question(
-        this, QStringLiteral("Удаление сниппета"),
-        QStringLiteral("Удалить сниппет «%1»?").arg(name),
+        this, tr("Удаление сниппета"),
+        tr("Удалить сниппет «%1»?").arg(name),
         QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
     if (answer != QMessageBox::Yes)
         return;

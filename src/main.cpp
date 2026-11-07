@@ -2,18 +2,16 @@
 #include "appicon.h"
 #include "apppaths.h"
 #include "database.h"
+#include "localization.h"
 
 #include <QApplication>
 #include <QDir>
 #include <QGuiApplication>
-#include <QLibraryInfo>
 #include <QLocalServer>
 #include <QLocalSocket>
-#include <QLocale>
 #include <QLockFile>
 #include <QMessageBox>
 #include <QThread>
-#include <QTranslator>
 
 int main(int argc, char *argv[])
 {
@@ -28,28 +26,10 @@ int main(int argc, char *argv[])
     QGuiApplication::setDesktopFileName(QStringLiteral("flatch"));
 #endif
 
-    // Standard buttons of QMessageBox/QInputDialog/QColorDialog should be
-    // Russian too, regardless of the system language. Translations are
-    // deployed next to the executable; while running from Qt Creator the
-    // Qt installation directory is used as a fallback.
-    QTranslator qtTranslator;
-    const QLocale russianLocale(QLocale::Russian, QLocale::Russia);
-    const QString localTranslations =
-        QCoreApplication::applicationDirPath() + QStringLiteral("/translations");
-    const QString qtTranslations = QLibraryInfo::path(QLibraryInfo::TranslationsPath);
-    // windeployqt ships a merged qt_ru.qm; a Qt installation has qtbase_ru.qm.
-    const bool translatorLoaded =
-        qtTranslator.load(russianLocale, QStringLiteral("qt"), QStringLiteral("_"),
-                          localTranslations)
-        || qtTranslator.load(russianLocale, QStringLiteral("qtbase"), QStringLiteral("_"),
-                             localTranslations)
-        || qtTranslator.load(russianLocale, QStringLiteral("qt"), QStringLiteral("_"),
-                             qtTranslations)
-        || qtTranslator.load(russianLocale, QStringLiteral("qtbase"), QStringLiteral("_"),
-                             qtTranslations);
-    if (translatorLoaded) {
-        application.installTranslator(&qtTranslator);
-    }
+    // The interface language is taken from the saved preference, or from the
+    // system language when the user has not chosen one: Russian systems get
+    // Russian, every other system gets English.
+    Localization::installTranslators();
 
     const bool autostartLaunch = application.arguments().contains(QStringLiteral("--autostart"));
 
@@ -85,8 +65,9 @@ int main(int argc, char *argv[])
 
         QMessageBox::warning(
             nullptr, QStringLiteral("Flatch"),
-            QStringLiteral("Flatch уже запущен, но не отвечает.\n\n"
-                           "Завершите процесс Flatch.exe в диспетчере задач и попробуйте снова."));
+            QCoreApplication::translate(
+                "main", "Flatch уже запущен, но не отвечает.\n\n"
+                        "Завершите процесс Flatch.exe в диспетчере задач и попробуйте снова."));
         return 1;
     }
 
@@ -95,7 +76,8 @@ int main(int argc, char *argv[])
     if (!database.open(&error)) {
         QMessageBox::critical(
             nullptr, QStringLiteral("Flatch"),
-            QStringLiteral("Не удалось открыть базу данных.\n\n%1\n\nПуть: %2")
+            QCoreApplication::translate("main",
+                                        "Не удалось открыть базу данных.\n\n%1\n\nПуть: %2")
                 .arg(error, QDir::toNativeSeparators(AppPaths::databaseFile())));
         return 1;
     }

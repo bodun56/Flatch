@@ -1,5 +1,6 @@
 #include "snippet.h"
 
+#include <QCoreApplication>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonValue>
@@ -8,15 +9,15 @@ QString snippetKindName(SnippetKind kind)
 {
     switch (kind) {
     case SnippetKind::PlainText:
-        return QStringLiteral("Простой текст");
+        return QCoreApplication::translate("SnippetKind", "Простой текст");
     case SnippetKind::RichText:
-        return QStringLiteral("Форматированный текст");
+        return QCoreApplication::translate("SnippetKind", "Форматированный текст");
     case SnippetKind::Files:
-        return QStringLiteral("Файлы");
+        return QCoreApplication::translate("SnippetKind", "Файлы");
     case SnippetKind::Application:
-        return QStringLiteral("Приложение");
+        return QCoreApplication::translate("SnippetKind", "Приложение");
     }
-    return QStringLiteral("Неизвестно");
+    return QCoreApplication::translate("SnippetKind", "Неизвестно");
 }
 
 QString encodePaths(const QStringList &paths)

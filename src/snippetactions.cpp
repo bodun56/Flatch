@@ -4,6 +4,7 @@
 
 #include <QApplication>
 #include <QClipboard>
+#include <QCoreApplication>
 #include <QDesktopServices>
 #include <QDir>
 #include <QFileInfo>
@@ -69,7 +70,8 @@ bool launchApplication(const QString &path, QString *error)
 {
     const QFileInfo info(path);
     if (!info.exists() || !info.isFile()) {
-        setError(error, QStringLiteral("Приложение не найдено: «%1».").arg(path));
+        setError(error, QCoreApplication::translate(
+                            "SnippetActions", "Приложение не найдено: «%1».").arg(path));
         return false;
     }
 
@@ -102,7 +104,8 @@ bool launchApplication(const QString &path, QString *error)
     }
 
     if (!started) {
-        setError(error, QStringLiteral("Не удалось запустить приложение «%1».").arg(program));
+        setError(error, QCoreApplication::translate(
+                            "SnippetActions", "Не удалось запустить приложение «%1».").arg(program));
         return false;
     }
     return true;
@@ -137,7 +140,8 @@ bool activate(const Snippet &snippet, QString *error)
     case SnippetKind::Files: {
         const QStringList paths = decodePaths(snippet.content);
         if (paths.isEmpty()) {
-            setError(error, QStringLiteral("В сниппете не указаны файлы."));
+            setError(error, QCoreApplication::translate(
+                                "SnippetActions", "В сниппете не указаны файлы."));
             return false;
         }
         copyFiles(paths);
@@ -147,14 +151,15 @@ bool activate(const Snippet &snippet, QString *error)
     case SnippetKind::Application: {
         const QStringList paths = decodePaths(snippet.content);
         if (paths.isEmpty()) {
-            setError(error, QStringLiteral("В сниппете не указан путь к приложению."));
+            setError(error, QCoreApplication::translate(
+                                "SnippetActions", "В сниппете не указан путь к приложению."));
             return false;
         }
         return launchApplication(paths.first(), error);
     }
     }
 
-    setError(error, QStringLiteral("Неизвестный тип сниппета."));
+    setError(error, QCoreApplication::translate("SnippetActions", "Неизвестный тип сниппета."));
     return false;
 }
 

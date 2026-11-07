@@ -4,6 +4,7 @@
 
 class Database;
 class QCheckBox;
+class QComboBox;
 class QListWidget;
 class QPushButton;
 class QTreeWidget;
@@ -15,8 +16,12 @@ class SettingsDialog : public QDialog
 public:
     explicit SettingsDialog(Database *database, QWidget *parent = nullptr);
 
+signals:
+    void languageChanged();
+
 private:
     void buildUi();
+    void rebuildUi();
     void reloadCategories(int selectCategoryId = -1);
     void reloadSnippets(int selectSnippetId = -1);
     void updateCategoryButtons();
@@ -47,4 +52,5 @@ private:
     QPushButton *m_deleteSnippet = nullptr;
     QCheckBox *m_autostart = nullptr;
     QCheckBox *m_notifications = nullptr;
+    QComboBox *m_language = nullptr;
 };

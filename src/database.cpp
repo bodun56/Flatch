@@ -2,6 +2,7 @@
 
 #include "apppaths.h"
 
+#include <QCoreApplication>
 #include <QDateTime>
 #include <QDir>
 #include <QFileInfo>
@@ -134,7 +135,8 @@ bool Database::open(QString *error)
     m_db = QSqlDatabase::addDatabase(QStringLiteral("QSQLITE"), m_connectionName);
     m_db.setDatabaseName(m_path);
     if (!m_db.open()) {
-        setError(error, QStringLiteral("Не удалось открыть базу данных «%1»: %2")
+        setError(error, QCoreApplication::translate(
+                            "Database", "Не удалось открыть базу данных «%1»: %2")
                             .arg(m_path, m_db.lastError().text()));
         return false;
     }
@@ -153,8 +155,10 @@ bool Database::open(QString *error)
         version = pragma.value(0).toInt();
 
     if (version > 1) {
-        setError(error, QStringLiteral("База данных создана более новой версией Flatch "
-                                       "(версия схемы %1). Обновите приложение.").arg(version));
+        setError(error, QCoreApplication::translate(
+                            "Database",
+                            "База данных создана более новой версией Flatch "
+                            "(версия схемы %1). Обновите приложение.").arg(version));
         return false;
     }
 
@@ -201,7 +205,8 @@ bool Database::createSchema(QString *error)
     QSqlQuery query(m_db);
     for (const QString &statement : statements) {
         if (!query.exec(statement)) {
-            setError(error, QStringLiteral("Не удалось создать структуру базы данных: %1")
+            setError(error, QCoreApplication::translate(
+                                "Database", "Не удалось создать структуру базы данных: %1")
                                 .arg(query.lastError().text()));
             m_db.rollback();
             return false;
@@ -235,7 +240,7 @@ bool Database::seedIfEmpty(QString *error)
     if (count.value(0).toInt() == 0) {
         QSqlQuery insert(m_db);
         insert.prepare(QStringLiteral("INSERT INTO categories(name) VALUES(?)"));
-        insert.addBindValue(QStringLiteral("Общее"));
+        insert.addBindValue(QCoreApplication::translate("Database", "Общее"));
         if (!insert.exec()) {
             setError(error, insert.lastError().text());
             return false;
@@ -273,14 +278,17 @@ bool Database::addCategory(const QString &name, int *newId, QString *error)
 
     const QString trimmed = name.trimmed();
     if (trimmed.isEmpty()) {
-        setError(error, QStringLiteral("Название категории не может быть пустым."));
+        setError(error, QCoreApplication::translate(
+                            "Database", "Название категории не может быть пустым."));
         return false;
     }
     const bool categoryExists = categoryNameExists(m_db, trimmed, -1, error);
     if (error && !error->isEmpty())
         return false;
     if (categoryExists) {
-        setError(error, QStringLiteral("Категория с названием «%1» уже существует.").arg(trimmed));
+        setError(error, QCoreApplication::translate(
+                            "Database", "Категория с названием «%1» уже существует.")
+                            .arg(trimmed));
         return false;
     }
 
@@ -289,7 +297,9 @@ bool Database::addCategory(const QString &name, int *newId, QString *error)
     query.addBindValue(trimmed);
     if (!query.exec()) {
         if (isUniqueViolation(query.lastError()))
-            setError(error, QStringLiteral("Категория с названием «%1» уже существует.").arg(trimmed));
+            setError(error, QCoreApplication::translate(
+                            "Database", "Категория с названием «%1» уже существует.")
+                            .arg(trimmed));
         else
             setError(error, query.lastError().text());
         return false;
@@ -307,14 +317,17 @@ bool Database::renameCategory(int id, const QString &name, QString *error)
 
     const QString trimmed = name.trimmed();
     if (trimmed.isEmpty()) {
-        setError(error, QStringLiteral("Название категории не может быть пустым."));
+        setError(error, QCoreApplication::translate(
+                            "Database", "Название категории не может быть пустым."));
         return false;
     }
     const bool categoryExists = categoryNameExists(m_db, trimmed, id, error);
     if (error && !error->isEmpty())
         return false;
     if (categoryExists) {
-        setError(error, QStringLiteral("Категория с названием «%1» уже существует.").arg(trimmed));
+        setError(error, QCoreApplication::translate(
+                            "Database", "Категория с названием «%1» уже существует.")
+                            .arg(trimmed));
         return false;
     }
 
@@ -324,14 +337,16 @@ bool Database::renameCategory(int id, const QString &name, QString *error)
     query.addBindValue(id);
     if (!query.exec()) {
         if (isUniqueViolation(query.lastError()))
-            setError(error, QStringLiteral("Категория с названием «%1» уже существует.").arg(trimmed));
+            setError(error, QCoreApplication::translate(
+                            "Database", "Категория с названием «%1» уже существует.")
+                            .arg(trimmed));
         else
             setError(error, query.lastError().text());
         return false;
     }
 
     if (query.numRowsAffected() == 0) {
-        setError(error, QStringLiteral("Категория не найдена."));
+        setError(error, QCoreApplication::translate("Database", "Категория не найдена."));
         return false;
     }
     return true;
@@ -350,7 +365,7 @@ bool Database::removeCategory(int id, QString *error)
         return false;
     }
     if (query.numRowsAffected() == 0) {
-        setError(error, QStringLiteral("Категория не найдена."));
+        setError(error, QCoreApplication::translate("Database", "Категория не найдена."));
         return false;
     }
     return true;
@@ -382,7 +397,9 @@ bool Database::snippet(int id, Snippet *out, QString *error) const
     if (error)
         error->clear();
     if (!out) {
-        setError(error, QStringLiteral("Внутренняя ошибка: не передан получатель данных."));
+        setError(error, QCoreApplication::translate(
+                            "Database",
+                            "Внутренняя ошибка: не передан получатель данных."));
         return false;
     }
 
@@ -395,7 +412,8 @@ bool Database::snippet(int id, Snippet *out, QString *error) const
         return false;
     }
     if (!query.next()) {
-        setError(error, QStringLiteral("Сниппет не найден."));
+        setError(error, QCoreApplication::translate(
+                            "Database", "Сниппет не найден."));
         return false;
     }
 
@@ -413,7 +431,9 @@ bool Database::addSnippet(const Snippet &snippet, int *newId, QString *error)
     if (error && !error->isEmpty())
         return false;
     if (snippetExists) {
-        setError(error, QStringLiteral("В этой категории уже есть сниппет с названием «%1».")
+        setError(error, QCoreApplication::translate(
+                            "Database",
+                            "В этой категории уже есть сниппет с названием «%1».")
                             .arg(name));
         return false;
     }
@@ -429,7 +449,9 @@ bool Database::addSnippet(const Snippet &snippet, int *newId, QString *error)
     query.addBindValue(snippet.encrypted ? 1 : 0);
     if (!query.exec()) {
         if (isUniqueViolation(query.lastError()))
-            setError(error, QStringLiteral("В этой категории уже есть сниппет с названием «%1».")
+            setError(error, QCoreApplication::translate(
+                                "Database",
+                                "В этой категории уже есть сниппет с названием «%1».")
                                 .arg(name));
         else
             setError(error, query.lastError().text());
@@ -452,7 +474,9 @@ bool Database::updateSnippet(const Snippet &snippet, QString *error)
     if (error && !error->isEmpty())
         return false;
     if (snippetExists) {
-        setError(error, QStringLiteral("В этой категории уже есть сниппет с названием «%1».")
+        setError(error, QCoreApplication::translate(
+                            "Database",
+                            "В этой категории уже есть сниппет с названием «%1».")
                             .arg(name));
         return false;
     }
@@ -469,7 +493,9 @@ bool Database::updateSnippet(const Snippet &snippet, QString *error)
     query.addBindValue(snippet.id);
     if (!query.exec()) {
         if (isUniqueViolation(query.lastError()))
-            setError(error, QStringLiteral("В этой категории уже есть сниппет с названием «%1».")
+            setError(error, QCoreApplication::translate(
+                                "Database",
+                                "В этой категории уже есть сниппет с названием «%1».")
                                 .arg(name));
         else
             setError(error, query.lastError().text());
@@ -477,7 +503,8 @@ bool Database::updateSnippet(const Snippet &snippet, QString *error)
     }
 
     if (query.numRowsAffected() == 0) {
-        setError(error, QStringLiteral("Сниппет не найден."));
+        setError(error, QCoreApplication::translate(
+                            "Database", "Сниппет не найден."));
         return false;
     }
     return true;
@@ -496,7 +523,8 @@ bool Database::removeSnippet(int id, QString *error)
         return false;
     }
     if (query.numRowsAffected() == 0) {
-        setError(error, QStringLiteral("Сниппет не найден."));
+        setError(error, QCoreApplication::translate(
+                            "Database", "Сниппет не найден."));
         return false;
     }
     return true;

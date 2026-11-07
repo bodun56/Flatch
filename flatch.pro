@@ -2,9 +2,9 @@ QT += core gui widgets sql network
 
 TEMPLATE = app
 TARGET = Flatch
-VERSION = 1.0.0
+VERSION = 1.1.0
 
-CONFIG += c++17 warn_on
+CONFIG += c++17 warn_on lrelease embed_translations
 CONFIG -= app_bundle
 
 DEFINES += QT_DEPRECATED_WARNINGS
@@ -26,6 +26,7 @@ SOURCES += \
     src/autostart.cpp \
     src/crypto.cpp \
     src/database.cpp \
+    src/localization.cpp \
     src/preferences.cpp \
     src/settingsdialog.cpp \
     src/snippet.cpp \
@@ -41,6 +42,7 @@ HEADERS += \
     src/autostart.h \
     src/crypto.h \
     src/database.h \
+    src/localization.h \
     src/preferences.h \
     src/settingsdialog.h \
     src/snippet.h \
@@ -50,5 +52,7 @@ HEADERS += \
     src/uiutils.h
 
 RESOURCES += resources/resources.qrc
+
+TRANSLATIONS += translations/flatch_en.ts
 
 RC_ICONS = resources/icons/flatch.ico

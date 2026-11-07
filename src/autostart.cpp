@@ -119,7 +119,9 @@ bool setEnabled(bool enabled, QString *error)
         settings.remove(QStringLiteral("Flatch"));
     settings.sync();
     if (settings.status() != QSettings::NoError) {
-        setError(error, QStringLiteral("Не удалось изменить параметры автозагрузки в реестре Windows."));
+        setError(error, QCoreApplication::translate(
+                            "Autostart",
+                            "Не удалось изменить параметры автозагрузки в реестре Windows."));
         return false;
     }
     return true;
@@ -127,27 +129,31 @@ bool setEnabled(bool enabled, QString *error)
     const QString path = desktopFilePath();
     if (!enabled) {
         if (QFileInfo::exists(path) && !QFile::remove(path)) {
-            setError(error, QStringLiteral("Не удалось удалить файл автозагрузки «%1».").arg(path));
+            setError(error, QCoreApplication::translate(
+                                "Autostart", "Не удалось удалить файл автозагрузки «%1».").arg(path));
             return false;
         }
         return true;
     }
 
     if (!QDir().mkpath(autostartDirectory())) {
-        setError(error, QStringLiteral("Не удалось создать папку автозагрузки «%1».")
+        setError(error, QCoreApplication::translate(
+                            "Autostart", "Не удалось создать папку автозагрузки «%1».")
                             .arg(autostartDirectory()));
         return false;
     }
 
     QSaveFile file(path);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-        setError(error, QStringLiteral("Не удалось записать файл автозагрузки «%1»: %2")
+        setError(error, QCoreApplication::translate(
+                            "Autostart", "Не удалось записать файл автозагрузки «%1»: %2")
                             .arg(path, file.errorString()));
         return false;
     }
     const QByteArray contents = desktopFileContents().toUtf8();
     if (file.write(contents) != contents.size() || !file.commit()) {
-        setError(error, QStringLiteral("Не удалось сохранить файл автозагрузки «%1»: %2")
+        setError(error, QCoreApplication::translate(
+                            "Autostart", "Не удалось сохранить файл автозагрузки «%1»: %2")
                             .arg(path, file.errorString()));
         return false;
     }
@@ -156,7 +162,8 @@ bool setEnabled(bool enabled, QString *error)
     return true;
 #else
     Q_UNUSED(enabled);
-    setError(error, QStringLiteral("Автозагрузка поддерживается только в Windows и Linux."));
+    setError(error, QCoreApplication::translate(
+                        "Autostart", "Автозагрузка поддерживается только в Windows и Linux."));
     return false;
 #endif
 }

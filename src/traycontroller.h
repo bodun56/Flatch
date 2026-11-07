@@ -15,6 +15,7 @@ public:
     ~TrayController() override;
 
     void show();
+    void retranslate();
 
 signals:
     void settingsRequested();
