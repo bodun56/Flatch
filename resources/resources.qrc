@@ -1,0 +1,14 @@
+<!DOCTYPE RCC>
+<RCC version="1.0">
+    <qresource prefix="/icons">
+        <file alias="flatch_16.png">icons/flatch_16.png</file>
+        <file alias="flatch_20.png">icons/flatch_20.png</file>
+        <file alias="flatch_24.png">icons/flatch_24.png</file>
+        <file alias="flatch_32.png">icons/flatch_32.png</file>
+        <file alias="flatch_40.png">icons/flatch_40.png</file>
+        <file alias="flatch_48.png">icons/flatch_48.png</file>
+        <file alias="flatch_64.png">icons/flatch_64.png</file>
+        <file alias="flatch_128.png">icons/flatch_128.png</file>
+        <file alias="flatch_256.png">icons/flatch_256.png</file>
+    </qresource>
+</RCC>
